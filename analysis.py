@@ -1,5 +1,5 @@
 from mnist import MNIST
-import cv2
+import cv2 as cv2
 import numpy as np
 
 data = MNIST('samples')
@@ -61,12 +61,21 @@ def test_accuracy(average_filter, total_trainers, total_testers):
 
 def normal_positive_image(image_matrix):
   minValue = np.min(image_matrix)
-  normal_image_matrix = np.subtract(image_matrix, minValue)
+  normal_image_matrix = np.subtract(image_matrix, minValue*2)
   maxValue = np.max(normal_image_matrix)
   normal_image_matrix = np.divide(normal_image_matrix, maxValue)
   return normal_image_matrix
 
+def convolution(image_matrix, filter):
+  filter_size = filter.shape[0]
+  correlation = np.zeros((image_matrix.shape[0]+filter_size, image_matrix.shape[1]+filter_size))
+  image_matrix_padded = cv2.copyMakeBorder(image_matrix, filter_size, filter_size, filter_size, filter_size, cv2.BORDER_CONSTANT, value=0)
 
+  for ii in range(ydim+filter_size):
+    for jj in range(xdim+filter_size):
+      sample = image_matrix_padded[ii:ii+filter_size, jj:jj+filter_size]
+      correlation[ii, jj] = np.sum(np.sum(np.multiply(filter, sample)))
+  return correlation
 
 average_filter = create_filter(total_trainers)
 accuracy = test_accuracy(average_filter, total_trainers, total_testers)
@@ -74,24 +83,32 @@ accuracy = test_accuracy(average_filter, total_trainers, total_testers)
 print('accuracy:', accuracy, '%')
 
 filter_size = 3
-edge_detector = np.zeros((filter_size, filter_size))
-edge_detector[1,:] = 1
-edge_detector[2,:] = -1
-correlation = np.zeros((ydim+filter_size, xdim+filter_size))
-cv2.imshow('figure', normal_positive_image(edge_detector))
-cv2.waitKey(0)
+edge_detector_h = np.zeros((filter_size, filter_size))
+edge_detector_h[0,:] = -0.5
+edge_detector_h[1,:] = 1
+edge_detector_h[2,:] = -0.5
+
+edge_detector_v = np.zeros((filter_size, filter_size))
+edge_detector_v[:,0] = -0.5
+edge_detector_v[:,1] = 1
+edge_detector_v[:,2] = -0.5
+
+edge_detector_d = np.zeros((filter_size, filter_size))
+edge_detector_d[0,0] = 1
+edge_detector_d[1,1] = 1
+edge_detector_d[2,2] = 1
+edge_detector_d[0,1] = -.5
+edge_detector_d[1,2] = -.5
+edge_detector_d[1,0] = -.5
+edge_detector_d[2,1] = -.5
 
 label, image_matrix = extract_image(5, images, labels)
-image_matrix_padded = cv2.copyMakeBorder(image_matrix, filter_size, filter_size, filter_size, filter_size, cv2.BORDER_CONSTANT, value=0)
+correlation_h = convolution(image_matrix, edge_detector_h)
+correlation_v = convolution(image_matrix, edge_detector_v)
+correlation_d = convolution(image_matrix, edge_detector_d)
 
-for ii in range(ydim+filter_size):
-  for jj in range(xdim+filter_size):
-    sample = image_matrix_padded[ii:ii+filter_size, jj:jj+filter_size]
-    correlation[ii, jj] = np.sum(np.sum(np.multiply(edge_detector, sample)))
-
-
-cv2.imshow('figure', image_matrix)
-cv2.waitKey(0)
-
-cv2.imshow('figure', normal_positive_image(correlation))
+cv2.imshow('figure1', image_matrix)
+cv2.imshow('figure2', normal_positive_image(correlation_h))
+cv2.imshow('figure3', normal_positive_image(correlation_v))
+cv2.imshow('figure4', normal_positive_image(correlation_d))
 cv2.waitKey(0)
