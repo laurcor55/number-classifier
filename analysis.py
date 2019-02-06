@@ -59,7 +59,39 @@ def test_accuracy(average_filter, total_trainers, total_testers):
       total_correct += 1
   return total_correct/total_testers*100
 
+def normal_positive_image(image_matrix):
+  minValue = np.min(image_matrix)
+  normal_image_matrix = np.subtract(image_matrix, minValue)
+  maxValue = np.max(normal_image_matrix)
+  normal_image_matrix = np.divide(normal_image_matrix, maxValue)
+  return normal_image_matrix
+
+
+
 average_filter = create_filter(total_trainers)
 accuracy = test_accuracy(average_filter, total_trainers, total_testers)
 
 print('accuracy:', accuracy, '%')
+
+filter_size = 3
+edge_detector = np.zeros((filter_size, filter_size))
+edge_detector[1,:] = 1
+edge_detector[2,:] = -1
+correlation = np.zeros((ydim+filter_size, xdim+filter_size))
+cv2.imshow('figure', normal_positive_image(edge_detector))
+cv2.waitKey(0)
+
+label, image_matrix = extract_image(5, images, labels)
+image_matrix_padded = cv2.copyMakeBorder(image_matrix, filter_size, filter_size, filter_size, filter_size, cv2.BORDER_CONSTANT, value=0)
+
+for ii in range(ydim+filter_size):
+  for jj in range(xdim+filter_size):
+    sample = image_matrix_padded[ii:ii+filter_size, jj:jj+filter_size]
+    correlation[ii, jj] = np.sum(np.sum(np.multiply(edge_detector, sample)))
+
+
+cv2.imshow('figure', image_matrix)
+cv2.waitKey(0)
+
+cv2.imshow('figure', normal_positive_image(correlation))
+cv2.waitKey(0)
