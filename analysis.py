@@ -1,5 +1,5 @@
 from mnist import MNIST
-import cv2 as cv2
+import cv2 
 import numpy as np
 
 data = MNIST('samples')
@@ -74,7 +74,8 @@ def convolution(image_matrix, filter):
   for ii in range(ydim+filter_size):
     for jj in range(xdim+filter_size):
       sample = image_matrix_padded[ii:ii+filter_size, jj:jj+filter_size]
-      correlation[ii, jj] = np.sum(np.sum(np.multiply(filter, sample)))
+      correlation[ii, jj] = abs(np.sum(np.sum(np.multiply(filter, sample))))
+  correlation = (correlation > 2*np.max(correlation)/3) * np.ones((correlation.shape[0], correlation.shape[1]))
   return correlation
 
 average_filter = create_filter(total_trainers)
@@ -108,7 +109,7 @@ correlation_v = convolution(image_matrix, edge_detector_v)
 correlation_d = convolution(image_matrix, edge_detector_d)
 
 cv2.imshow('figure1', image_matrix)
-cv2.imshow('figure2', normal_positive_image(correlation_h))
-cv2.imshow('figure3', normal_positive_image(correlation_v))
-cv2.imshow('figure4', normal_positive_image(correlation_d))
+cv2.imshow('figure2', correlation_h)
+cv2.imshow('figure3', correlation_v)
+cv2.imshow('figure4', correlation_d)
 cv2.waitKey(0)
