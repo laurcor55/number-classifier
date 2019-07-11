@@ -27,13 +27,13 @@ def parse_image(sample_number, images):
   return image_matrix
 
 total_correct = 0
-for jj in range(1000):
+for jj in range(100):
   image_test = parse_image(jj, images_test)
   label_test = labels_test[jj]
-  fit = np.zeros(len(labels_test))
-  for ii in range(1000):
+  fit = np.zeros(len(labels_train))
+  for ii in range(len(labels_train)):
     image_train = parse_image(ii, images_train)
-    fit[ii] = np.sum(np.multiply(image_train, image_test))
-  fit_ind = np.argmax(fit)
+    fit[ii] = np.sum(np.abs(np.subtract(image_train, image_test)))
+  fit_ind = np.argmin(fit)
   total_correct += (labels_train[fit_ind] == label_test)
-print(total_correct)
+print('Accuracy: ' + str(total_correct) + '%')
