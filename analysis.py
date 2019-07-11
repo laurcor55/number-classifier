@@ -1,6 +1,7 @@
 from mnist import MNIST
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 
 data = MNIST('samples')
 images, labels = data.load_training()
@@ -60,6 +61,11 @@ def test_accuracy(average_filter, total_trainers, total_testers):
   return total_correct/total_testers*100
 
 average_filter = create_filter(total_trainers)
+for ii in range(9):
+  plt.subplot(3, 3, ii+1)
+  plt.imshow(average_filter[ii])
+plt.show()
+
 accuracy = test_accuracy(average_filter, total_trainers, total_testers)
 
 print('accuracy:', accuracy, '%')
