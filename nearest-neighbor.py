@@ -2,6 +2,8 @@ from mnist import MNIST
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import statistics as stats
+from collections import Counter
 
 data = MNIST('samples')
 images, labels = data.load_training()
@@ -34,6 +36,11 @@ for jj in range(100):
   for ii in range(len(labels_train)):
     image_train = parse_image(ii, images_train)
     fit[ii] = np.sum(np.abs(np.subtract(image_train, image_test)))
-  fit_ind = np.argmin(fit)
-  total_correct += (labels_train[fit_ind] == label_test)
+  fit_sort = np.argsort(fit)
+  nearest_neighbors = 9
+  fit_values = np.zeros(nearest_neighbors)
+  for kk in range(nearest_neighbors):
+    fit_values[kk] = labels_train[fit_sort[kk]]
+  fit_value = Counter(fit_values).most_common()
+  total_correct += (fit_value[0][0] == label_test)
 print('Accuracy: ' + str(total_correct) + '%')
